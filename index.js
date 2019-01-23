@@ -32,6 +32,7 @@ app.post('/', function(req, res) {
     }
 
     if (error != null || _.isEmpty(_.trim(stdout.toString('UTF-8')))) {
+      console.log(error);
       return res.sendStatus(500);
     }
 

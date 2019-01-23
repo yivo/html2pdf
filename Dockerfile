@@ -19,6 +19,8 @@ CMD ["node", "index.js"]
 
 WORKDIR $APP_ROOT
 
+RUN apk add --update curl nano
+
 # Install Gemfile dependencies.
 COPY package.json package-lock.json $APP_ROOT/
 RUN npm install
