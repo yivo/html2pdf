@@ -16,7 +16,7 @@ app.post('/', function(req, res) {
   var path = temp.sync(_.toString(req.body.html), 'index.html');
   setTimeout(function() { fs.unlink(path); }, 1000 * 60 * 60); // One hour.
 
-  var command = 'wkhtmltopdf ' + options + ' file://' + path + ' -';
+  var command = 'wkhtmltopdf ' + options + ' file://' + path + ' - | cat';
 
   console.log('Executing ' + command);
 
