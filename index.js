@@ -1,16 +1,16 @@
-var _       = require('lodash');
-var express = require('express');
-var app     = express();
-var fs      = require('fs');
-var temp    = require('temp-write');
-var execute = require('child_process').exec;
-var quote   = require('shell-quote').quote;
+var _           = require('lodash');
+var express     = require('express');
+var app         = express();
+var fs          = require('fs');
+var temp        = require('temp-write');
+var execute     = require('child_process').exec;
+var shellescape = require('shell-escape');
 
 app.use(express.json());
 
 app.post('/', function(req, res) {
   var options = _.map(_.omit(req.body, 'html', 'url'), function(value, name) {
-    return '--' + name.replace(/_/g, '-') + ' ' + quote([_.toString(value)]);
+    return '--' + name.replace(/_/g, '-') + ' ' + shellescape([_.toString(value)]);
   }).join(' ');
 
   if (!_.isEmpty(req.body.url)) {
