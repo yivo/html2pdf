@@ -21,7 +21,7 @@ app.post('/', function(req, res) {
     setTimeout(function() { fs.unlink(path); }, 1000 * 60 * 60); // One hour.
   }
 
-  var command = 'wkhtmltopdf ' + options + ' ' + shellescape(url) + ' - | cat';
+  var command = 'wkhtmltopdf ' + options + ' ' + shellescape([url]) + ' - | cat';
 
   console.log('Executing ' + command);
 
