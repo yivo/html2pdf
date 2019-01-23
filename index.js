@@ -25,13 +25,19 @@ app.post('/', function(req, res) {
 
   console.log('Executing ' + command);
 
-  execute(command, function(error, stdout, stderr) {
-    if (error !== null) {
-      console.error(error);
-      return res.status(500);
-    } else {
-      res.send(stdout);
+  execute(command, { encoding: 'buffer', timeout: 10 * 60 * 1000 }, function(error, stdout, stderr) {
+    stderr = _.trim(stderr.toString('UTF-8'));
+    if (!_.isEmpty(stderr)) {
+      console.log(stderr)
     }
+
+    if (error != null || _.isEmpty(_.trim(stdout.toString('UTF-8')))) {
+      return res.sendStatus(500);
+    }
+
+    console.log('Generated PDF.');
+    res.contentType('application/pdf');
+    res.send(stdout);
   });
 });
 
