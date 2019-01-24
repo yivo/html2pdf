@@ -13,19 +13,36 @@ app.use(bodyparser.urlencoded({ limit: '128mb', extended: true }));
 app.use(express.json());
 
 app.post('/', function(req, res) {
-  var options = _.map(_.omit(req.body, 'html', 'url'), function(value, name) {
+  function argumentize(name, value) {
     return '--' + name.replace(/_/g, '-') + ' ' + shellescape([_.toString(value)]);
-  }).join(' ');
+  }
+
+  var options = _.map(_.omit(req.body, 'html', 'url', 'header_html', 'footer_html'), function(value, name) {
+    return argumentize(name, value);
+  });
+
+  _.each(['header_html', 'footer_html'], function(name) {
+    console.log(_.isEmpty(_.trim(req.body[name])));
+    if (_.isEmpty(_.trim(req.body[name]))) { return }
+    if (_.toString(req.body[name]).match(/^https?:\/\//)) {
+      options.push(argumentize(name, req.body[name]));
+    } else {
+      var path = temp.sync(_.toString(req.body[name]), 'template.html');
+      var url  = 'file://' + path;
+      setTimeout(function() { fs.unlink(path); }, 10 * 60 * 1000); // 10 minutes.
+      options.push(argumentize(name, url));
+    }
+  });
 
   if (!_.isEmpty(req.body.url)) {
     var url = req.body.url;
   } else {
     var path = temp.sync(_.toString(req.body.html), 'index.html');
     var url  = 'file://' + path;
-    setTimeout(function() { fs.unlink(path); }, 1000 * 60 * 60); // One hour.
+    setTimeout(function() { fs.unlink(path); }, 10 * 60 * 1000); // 10 minutes.
   }
 
-  var command = 'wkhtmltopdf ' + options + ' ' + shellescape([url]) + ' - | cat';
+  var command = 'wkhtmltopdf ' + options.join(' ') + ' ' + shellescape([url]) + ' - | cat';
 
   console.log('Executing ' + command);
 
@@ -46,7 +63,7 @@ app.post('/', function(req, res) {
   });
 });
 
-var close = _.once(function() { server.close(); });
+var close = _.once(function() { server.close(); process.exit(); });
 _.each(['SIGINT', 'SIGTERM'], function(signal) { process.on(signal, close); });
 
 var port = process.env.APP_PORT || 8080;
