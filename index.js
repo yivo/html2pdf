@@ -5,6 +5,10 @@ var fs          = require('fs');
 var temp        = require('temp-write');
 var execute     = require('child_process').exec;
 var shellescape = require('shell-escape');
+var bodyparser  = require('body-parser');
+
+app.use(bodyparser.json({ limit: '128mb' }));
+app.use(bodyparser.urlencoded({ limit: '128mb', extended: true }));
 
 app.use(express.json());
 
