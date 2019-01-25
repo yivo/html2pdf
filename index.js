@@ -10,8 +10,6 @@ var bodyparser  = require('body-parser');
 app.use(bodyparser.json({ limit: '128mb' }));
 app.use(bodyparser.urlencoded({ limit: '128mb', extended: true }));
 
-app.use(express.json());
-
 app.post('/', function(req, res) {
   function argumentize(name, value) {
     return '--' + name.replace(/_/g, '-') + ' ' + shellescape([_.toString(value)]);
@@ -22,7 +20,6 @@ app.post('/', function(req, res) {
   });
 
   _.each(['header_html', 'footer_html'], function(name) {
-    console.log(_.isEmpty(_.trim(req.body[name])));
     if (_.isEmpty(_.trim(req.body[name]))) { return }
     if (_.toString(req.body[name]).match(/^https?:\/\//)) {
       options.push(argumentize(name, req.body[name]));
