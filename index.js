@@ -11,6 +11,8 @@ app.use(bodyparser.json({ limit: '128mb' }));
 app.use(bodyparser.urlencoded({ limit: '128mb', extended: true }));
 
 app.post('/', function(req, res) {
+  req.setTimeout(10 * 60 * 1000); // 10 minutes.
+
   function argumentize(name, value) {
     return '--' + name.replace(/_/g, '-') + ' ' + shellescape([_.toString(value)]);
   }
