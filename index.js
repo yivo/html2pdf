@@ -45,7 +45,7 @@ app.post('/', function(req, res) {
 
   console.log('Executing ' + command);
 
-  execute(command, { encoding: 'buffer', timeout: 10 * 60 * 1000, maxBuffer: 1024 * 1024 * 1024 }, function(error, stdout, stderr) {
+  execute(command, { encoding: 'buffer', timeout: 10 * 60 * 1000, maxBuffer: 8 * 1024 * 1024 * 1024 }, function(error, stdout, stderr) {
     stderr = _.trim(stderr.toString('UTF-8'));
     if (!_.isEmpty(stderr)) {
       console.log(stderr)
