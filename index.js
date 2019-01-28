@@ -26,7 +26,7 @@ app.post('/', function(req, res) {
     } else {
       var path = temp.sync(_.toString(req.body[name]), 'template.html');
       var url  = 'file://' + path;
-      setTimeout(function() { fs.unlink(path); }, 10 * 60 * 1000); // 10 minutes.
+      setTimeout(function() { fs.unlink(path, _.noop); }, 10 * 60 * 1000); // 10 minutes.
       options.push(argumentize(name, url));
     }
   });
@@ -36,7 +36,7 @@ app.post('/', function(req, res) {
   } else {
     var path = temp.sync(_.toString(req.body.html), 'index.html');
     var url  = 'file://' + path;
-    setTimeout(function() { fs.unlink(path); }, 10 * 60 * 1000); // 10 minutes.
+    setTimeout(function() { fs.unlink(path, _.noop); }, 10 * 60 * 1000); // 10 minutes.
   }
 
   var command = 'wkhtmltopdf ' + options.join(' ') + ' ' + shellescape([url]) + ' - | cat';
