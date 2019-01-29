@@ -11,7 +11,7 @@ app.use(bodyparser.json({ limit: '128mb' }));
 app.use(bodyparser.urlencoded({ limit: '128mb', extended: true }));
 
 app.post('/', function(req, res) {
-  req.setTimeout(60 * 60 * 1000); // 1 hour.
+  req.setTimeout(24 * 60 * 60 * 1000); // 24 hours.
 
   function argumentize(name, value) {
     return '--' + name.replace(/_/g, '-') + ' ' + shellescape([_.toString(value)]);
@@ -28,7 +28,7 @@ app.post('/', function(req, res) {
     } else {
       var path = temp.sync(_.toString(req.body[name]), 'template.html');
       var url  = 'file://' + path;
-      setTimeout(function() { fs.unlink(path, _.noop); }, 60 * 60 * 1000); // 1 hour.
+      setTimeout(function() { fs.unlink(path, _.noop); }, 24 * 60 * 60 * 1000); // 24 hours.
       options.push(argumentize(name, url));
     }
   });
@@ -38,7 +38,7 @@ app.post('/', function(req, res) {
   } else {
     var path = temp.sync(_.toString(req.body.html), 'index.html');
     var url  = 'file://' + path;
-    setTimeout(function() { fs.unlink(path, _.noop); }, 60 * 60 * 1000); // 1 hour.
+    setTimeout(function() { fs.unlink(path, _.noop); }, 24 * 60 * 60 * 1000); // 24 hours.
   }
 
   var command = 'wkhtmltopdf ' + options.join(' ') + ' ' + shellescape([url]) + ' - | cat';
@@ -47,7 +47,7 @@ app.post('/', function(req, res) {
 
   var time = Date.now();
 
-  execute(command, { encoding: 'buffer', timeout: 60 * 60 * 1000, maxBuffer: 64 * 1024 * 1024 * 1024 }, function(error, stdout, stderr) {
+  execute(command, { encoding: 'buffer', timeout: 24 * 60 * 60 * 1000, maxBuffer: 64 * 1024 * 1024 * 1024 }, function(error, stdout, stderr) {
     stderr = _.trim(stderr.toString('UTF-8'));
     if (!_.isEmpty(stderr)) {
       console.log(stderr)
