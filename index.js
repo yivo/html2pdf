@@ -49,12 +49,10 @@ app.post('/', function(req, res) {
 
   execute(command, { encoding: 'buffer', timeout: 24 * 60 * 60 * 1000, maxBuffer: 64 * 1024 * 1024 * 1024 }, function(error, stdout, stderr) {
     stderr = _.trim(stderr.toString('UTF-8'));
-    if (!_.isEmpty(stderr)) {
-      console.log(stderr)
-    }
+    if (stderr) { console.log(stderr) }
 
-    if (error != null || _.isEmpty(_.trim(stdout.toString('UTF-8')))) {
-      console.log(error);
+    if (error != null || Buffer.byteLength(stdout) < 1024) {
+      if (error != null) { console.log(error) }
       return res.sendStatus(500);
     }
 
