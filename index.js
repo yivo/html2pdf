@@ -43,9 +43,11 @@ app.post('/', function(req, res) {
 
   var command = 'wkhtmltopdf ' + options.join(' ') + ' ' + shellescape([url]) + ' - | cat';
 
-  console.log('Executing ' + command);
+  console.log('\n\nExecuting ' + command);
 
-  execute(command, { encoding: 'buffer', timeout: 10 * 60 * 1000, maxBuffer: 8 * 1024 * 1024 * 1024 }, function(error, stdout, stderr) {
+  var time = Date.now();
+
+  execute(command, { encoding: 'buffer', timeout: 10 * 60 * 1000, maxBuffer: 64 * 1024 * 1024 * 1024 }, function(error, stdout, stderr) {
     stderr = _.trim(stderr.toString('UTF-8'));
     if (!_.isEmpty(stderr)) {
       console.log(stderr)
@@ -56,7 +58,7 @@ app.post('/', function(req, res) {
       return res.sendStatus(500);
     }
 
-    console.log('Generated PDF.');
+    console.log('PDF generated in ' + (Date.now() - time) + 'ms.');
     res.contentType('application/pdf');
     res.send(stdout);
   });
