@@ -11,6 +11,8 @@ app.use(bodyparser.json({ limit: '128mb' }));
 app.use(bodyparser.urlencoded({ limit: '128mb', extended: true }));
 
 app.post('/', function(req, res) {
+  console.log('\n\n[' + new Date() + ']');
+
   req.setTimeout(24 * 60 * 60 * 1000); // 24 hours.
 
   function argumentize(name, value) {
@@ -43,7 +45,7 @@ app.post('/', function(req, res) {
 
   var command = 'wkhtmltopdf ' + options.join(' ') + ' ' + shellescape([url]) + ' - | cat';
 
-  console.log('\n\nExecuting ' + command);
+  console.log('Executing ' + command);
 
   var time = Date.now();
 
@@ -51,7 +53,10 @@ app.post('/', function(req, res) {
     stderr = _.trim(stderr.toString('UTF-8'));
     if (stderr) { console.log(stderr) }
 
-    if (error != null || Buffer.byteLength(stdout) < 1024) {
+    var size = Buffer.byteLength(stdout);
+    console.log('PDF generator returned ' + size + ' bytes of data.');
+
+    if (error != null || size < 1024) {
       if (error != null) { console.log(error) }
       return res.sendStatus(500);
     }
