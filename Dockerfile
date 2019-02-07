@@ -1,5 +1,11 @@
 FROM surnet/alpine-node-wkhtmltopdf:8.11.3-0.12.5-full
 
+RUN apk --no-cache add msttcorefonts-installer fontconfig && \
+    update-ms-fonts && \
+    fc-cache -f
+
+COPY fonts /usr/share/fonts
+
 # By default image is built using NODE_ENV=production.
 # You may want to customize it:
 #
