@@ -1,20 +1,20 @@
 {
-  "name": "cs-html2pdf",
-  "private": true,
+  "name": "html2pdf",
+  "private": false,
   "version": "1.0.21",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
-    "body-parser": "^1.18.3",
-    "express": "^4.16.4",
-    "lodash": "^4.17.11",
-    "shell-escape": "^0.2.0",
-    "shell-quote": "^1.6.1",
-    "temp-write": "^3.4.0"
+    "body-parser": "^2.2.2",
+    "express": "^5.2.1",
+    "express-jwt": "^8.5.1",
+    "lodash": "^4.18.1",
+    "log-timestamp": "^0.3.0"
   }
 }
