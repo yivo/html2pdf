@@ -1,15 +1,30 @@
 import "log-timestamp";
 import _ from "lodash";
 import express from "express";
-import bodyparser from "body-parser";
+import bodyParser from "body-parser";
 import crypto from "crypto";
 import fs, { promises as fsPromises } from "fs";
 import { spawn } from "child_process";
 import path from "path";
 import os from "os";
+import { expressjwt } from "express-jwt";
+
+const JWT_SECRET = _.trim(process.env.JWT_SECRET);
+if (JWT_SECRET === "") {
+  console.error("JWT_SECRET is invalid");
+  process.exit(1);
+}
+
+// 30 minutes by default
+const WKHTMLTOPDF_TIMEOUT = _.parseInt(process.env.WKHTMLTOPDF_TIMEOUT || 30 * 60 * 1000);
 
 const app = express();
-app.use(bodyparser.json({ limit: "32mb" }));
+app.use(bodyParser.json({ limit: "32mb" }));
+
+const jwtMiddleware = expressjwt({
+  secret: JWT_SECRET,
+  algorithms: ["HS256"]
+});
 
 async function storeTemporaryFile(contents, extension) {
   let fileName = crypto.randomUUID()
@@ -20,8 +35,6 @@ async function storeTemporaryFile(contents, extension) {
   await fsPromises.writeFile(filePath, contents);
   return filePath;
 }
-
-const PDF_GENERATION_TIMEOUT = 24 * 60 * 60 * 1000 // 24 hours
 
 function convertOptionNameToAPIParameterFormat(name) {
   return name.replace(/^--/, "").replace(/-/g, "_")
@@ -170,7 +183,7 @@ const OPTION_TO_FILE_EXTENSION = Object.freeze({
   "--cookie-jar": "jar",
 })
 
-app.post("/", async (req, res) => {
+app.post("/", jwtMiddleware, async (req, res) => {
   const options = ["--log-level", "warn"]
   const temporaryFilesToCleanup = []
 
@@ -179,7 +192,7 @@ app.post("/", async (req, res) => {
     // Body HTML (mandatory)
     const bodyHTML = _.trim(req.body.body_html)
     if (bodyHTML === "") {
-      return res.status(422).json({ error: "body_html can't be blank" }).end()
+      return res.status(422).json({ error: "'body_html' can't be blank" })
     }
 
     for (const optionName of PERMITTED_OPTIONS_BOOLEAN) {
@@ -240,17 +253,17 @@ app.post("/", async (req, res) => {
     temporaryFilesToCleanup.push(pdfFilePath)
     options.push(pdfFilePath)
 
-    req.setTimeout(PDF_GENERATION_TIMEOUT);
+    req.setTimeout(WKHTMLTOPDF_TIMEOUT);
     const time = Date.now();
     console.log(`wkhtmltopdf ${options.join(" ")}`);
-    const pdfProcess = spawn("wkhtmltopdf", options, { timeout: PDF_GENERATION_TIMEOUT });
+    const pdfProcess = spawn("wkhtmltopdf", options, { timeout: WKHTMLTOPDF_TIMEOUT });
 
     pdfProcess.stdout.on("data", (data) => {
       console.log(`wkhtmltopdf: ${data.toString("UTF-8")}`);
     });
 
     pdfProcess.stderr.on("data", (data) => {
-      console.log(`wkhtmltopdf: ${data.toString("UTF-8")}`);
+      console.error(`wkhtmltopdf: ${data.toString("UTF-8")}`);
     });
 
     req.on("close", () => {
@@ -297,6 +310,14 @@ app.post("/", async (req, res) => {
         console.error(`Failed to delete temporary file ${filePath}:`, error.message);
       }
     }
+  }
+});
+
+app.use((err, req, res, next) => {
+  if (err.name === "UnauthorizedError") {
+    res.status(401).json({ error: "Unauthenticated: token is missing, invalid, revoked or expired" });
+  } else {
+    next(err);
   }
 });
 
