@@ -95,7 +95,7 @@ const PERMITTED_OPTIONS_BOOLEAN = Object.freeze(_.map([
   "--no-header-line",
   "--disable-dotted-lines",
   "--disable-toc-links",
-]))
+], convertOptionNameToAPIParameterFormat))
 
 const PERMITTED_OPTIONS_VALUE = Object.freeze(_.map([
   "--copies",
